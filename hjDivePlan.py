@@ -5,6 +5,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 import pyqtgraph as pg
 import numpy as np
+import padi_tables
 
 
 class Window(QtGui.QMainWindow):
@@ -33,7 +34,7 @@ class Window(QtGui.QMainWindow):
         whole_layout = QtGui.QVBoxLayout()
         whole_layout.addSpacerItem(QtGui.QSpacerItem(120, 10))
 
-        # dive dict
+        # dive params
         self.dive_dict = {1: {'d': 0, 't': 0}, 2: {'d': 0, 't': 0}}
 
         # settings row
@@ -213,6 +214,10 @@ class Window(QtGui.QMainWindow):
         pres_end_d1_lab.setFont(self.main_font)
         param_layout.addWidget(pres_end_d1_lab, 0, 0)
 
+        self.pres_end_d1 = QtGui.QLabel('', self)
+        self.pres_end_d1.setFont(self.main_font)
+        param_layout.addWidget(self.pres_end_d1, 0, 1)
+
         pres_begin_d2_lab = QtGui.QLabel('Dive 2 start pressure:', self)
         pres_begin_d2_lab.setFont(self.main_font)
         param_layout.addWidget(pres_begin_d2_lab, 1, 0)
@@ -258,6 +263,9 @@ class Window(QtGui.QMainWindow):
             new_plot_data = create_profile(t1, d1, t2, d2)
             self.plot_widget.plotItem.clear()
             self.plot_widget.plot(new_plot_data[0], new_plot_data[1])
+
+            d1_end_pressure = padi_tables.get_end_pres(t1, d1)
+            self.pres_end_d1.setText(d1_end_pressure)
 
     def store_dt1(self):
         self.dive_dict[1]['t'] = float(self.dt1.text())
