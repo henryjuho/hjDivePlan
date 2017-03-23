@@ -290,12 +290,12 @@ def create_profile(t1, d1, t2, d2):
     stop_t = 3
     desc_1_time = t_per_m_desc * d1
     asc_1_time2safety = t_per_m_asc * (d1 - 6)
-    d1_bt = t1 - desc_1_time - asc_1_time2safety - safety2surf - stop_t
+    d1_bt = t1  # t1 - desc_1_time - asc_1_time2safety - safety2surf - stop_t
 
     # DIVE TWO
     desc_2_time = t_per_m_desc * d2
     asc_2_time2safety = t_per_m_asc * (d2 - 6)
-    d2_bt = t2 - desc_2_time - asc_2_time2safety - safety2surf
+    d2_bt = t2  # t2 - desc_2_time - asc_2_time2safety - safety2surf
 
     # SURFACE INTERVAL
     interval = 30
