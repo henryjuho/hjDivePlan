@@ -213,7 +213,6 @@ class Window(QtGui.QMainWindow):
         pres_end_d1_lab = QtGui.QLabel('Dive 1 end pressure:', self)
         pres_end_d1_lab.setFont(self.main_font)
         param_layout.addWidget(pres_end_d1_lab, 0, 0)
-
         self.pres_end_d1 = QtGui.QLabel('', self)
         self.pres_end_d1.setFont(self.main_font)
         param_layout.addWidget(self.pres_end_d1, 0, 1)
@@ -221,14 +220,23 @@ class Window(QtGui.QMainWindow):
         pres_begin_d2_lab = QtGui.QLabel('Dive 2 start pressure:', self)
         pres_begin_d2_lab.setFont(self.main_font)
         param_layout.addWidget(pres_begin_d2_lab, 1, 0)
+        self.pres_begin_d2 = QtGui.QLabel('', self)
+        self.pres_begin_d2.setFont(self.main_font)
+        param_layout.addWidget(self.pres_begin_d2, 1, 1)
 
         pres_end_d2_lab = QtGui.QLabel('Dive 2 end pressure:', self)
         pres_end_d2_lab.setFont(self.main_font)
         param_layout.addWidget(pres_end_d2_lab, 2, 0)
+        self.pres_end_d2 = QtGui.QLabel('', self)
+        self.pres_end_d2.setFont(self.main_font)
+        param_layout.addWidget(self.pres_end_d2, 2, 1)
 
         min_si_lab = QtGui.QLabel('Min surface interval:', self)
         min_si_lab.setFont(self.main_font)
         param_layout.addWidget(min_si_lab, 3, 0)
+        self.min_si = QtGui.QLabel('', self)
+        self.min_si.setFont(self.main_font)
+        param_layout.addWidget(self.min_si, 3, 1)
 
         mod_lab = QtGui.QLabel('MOD of gas:', self)
         mod_lab.setFont(self.main_font)
@@ -267,12 +275,27 @@ class Window(QtGui.QMainWindow):
                 QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 2 exceeds the '
                                            'maximum for the specified depth!', QtGui.QMessageBox.Ok)
             else:
-                new_plot_data = create_profile(t1, d1, t2, d2)
+                d1_end_pressure = padi_tables.get_end_pres(t1, d1)
+                self.pres_end_d1.setText(d1_end_pressure)
+
+                min_d2_start_pressure = padi_tables.min_d2_start_pressure(d2, t2)
+                if min_d2_start_pressure > d1_end_pressure:
+                    d2_start_pressure = d1_end_pressure
+                else:
+                    d2_start_pressure = min_d2_start_pressure
+
+                self.pres_begin_d2.setText(d2_start_pressure)
+
+                surface_interval = padi_tables.min_surface(d1_end_pressure, d2, t2)
+                self.min_si.setText(str(surface_interval))
+
+                d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
+                self.pres_end_d2.setText(d2_end_pressure)
+
+                new_plot_data = create_profile(t1, d1, t2, d2, surface_interval)
                 self.plot_widget.plotItem.clear()
                 self.plot_widget.plot(new_plot_data[0], new_plot_data[1])
 
-                d1_end_pressure = padi_tables.get_end_pres(t1, d1)
-                self.pres_end_d1.setText(d1_end_pressure)
 
     def store_dt1(self):
         self.dive_dict[1]['t'] = float(self.dt1.text())
@@ -287,7 +310,7 @@ class Window(QtGui.QMainWindow):
         self.dive_dict[2]['d'] = float(self.dd2.text())
 
 
-def create_profile(t1, d1, t2, d2):
+def create_profile(t1, d1, t2, d2, si):
     # DIVE ONE
     # calc ascent and descent times
     t_per_m_desc = 1.0 / 30.0  # 30m per min descent rate
@@ -305,7 +328,7 @@ def create_profile(t1, d1, t2, d2):
     d2_bt = t2  # t2 - desc_2_time - asc_2_time2safety - safety2surf
 
     # SURFACE INTERVAL
-    interval = 30
+    interval = si
 
     # PROFILE
     x = [0, desc_1_time, d1_bt, asc_1_time2safety, stop_t, safety2surf, interval,
