@@ -1,4 +1,5 @@
 import string
+import sys
 
 padi_table_1 = {10: {'122': 'T', '178': 'X', '219': 'Z', '133': 'U', '88': 'P', '64': 'L', '112': 'S', '82': 'O',
                      '199': 'Y', '26': 'C', '20': 'B', '160': 'W', '45': 'H', '41': 'G', '145': 'V', '75': 'N',
@@ -239,6 +240,11 @@ def get_depth_group(depth):
         if last_dep < depth <= d:
             return d
         last_dep = d
+
+
+def max_bottom_time(depth):
+    dep_group = get_depth_group(depth)
+    return max_bottom_times[dep_group]
 
 
 def get_nearest_time_frame(dive_time, depth):
