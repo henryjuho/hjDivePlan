@@ -260,12 +260,19 @@ class Window(QtGui.QMainWindow):
             t2 = self.dive_dict[2]['t']
             d2 = self.dive_dict[2]['d']
 
-            new_plot_data = create_profile(t1, d1, t2, d2)
-            self.plot_widget.plotItem.clear()
-            self.plot_widget.plot(new_plot_data[0], new_plot_data[1])
+            if padi_tables.max_bottom_time(d1) <= t1:
+                QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 1 exceeds the '
+                                           'maximum for the specified depth!', QtGui.QMessageBox.Ok)
+            elif padi_tables.max_bottom_time(d2) <= t2:
+                QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 2 exceeds the '
+                                           'maximum for the specified depth!', QtGui.QMessageBox.Ok)
+            else:
+                new_plot_data = create_profile(t1, d1, t2, d2)
+                self.plot_widget.plotItem.clear()
+                self.plot_widget.plot(new_plot_data[0], new_plot_data[1])
 
-            d1_end_pressure = padi_tables.get_end_pres(t1, d1)
-            self.pres_end_d1.setText(d1_end_pressure)
+                d1_end_pressure = padi_tables.get_end_pres(t1, d1)
+                self.pres_end_d1.setText(d1_end_pressure)
 
     def store_dt1(self):
         self.dive_dict[1]['t'] = float(self.dt1.text())
