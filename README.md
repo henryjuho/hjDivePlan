@@ -1,2 +1,4 @@
 # hjDivePlan
-A simple dive planner based on PADI dive tables, in development, not to be used to actually plan dives!
+A simple dive planner written using PyQt <> using the PADI recreational dive planner (RDP).
+
+This project is in development and should under no circumstances be used to plan actual dives.
