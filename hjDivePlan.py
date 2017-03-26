@@ -6,6 +6,7 @@ from PyQt4 import QtCore
 import pyqtgraph as pg
 import numpy as np
 import padi_tables
+import daltons_utils as dl
 
 
 class Window(QtGui.QMainWindow):
@@ -24,6 +25,9 @@ class Window(QtGui.QMainWindow):
         QtGui.QAction.connect(run_plan, QtCore.SIGNAL('triggered()'), self.run_calculation)
         toolbar = self.addToolBar('Run')
         toolbar.addAction(run_plan)
+        tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'info', self)
+        QtGui.QAction.connect(tables, QtCore.SIGNAL('triggered()'), self.display_tables)
+        toolbar.addAction(tables)
         info = QtGui.QAction(QtGui.QIcon('images/info2.png'), 'info', self)
         QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
         toolbar.addAction(info)
@@ -32,10 +36,12 @@ class Window(QtGui.QMainWindow):
         toolbar.addAction(exit_planner)
 
         # fonts
-        self.header_font = QtGui.QFont('SansSerif', 18)
+        self.header_font = QtGui.QFont('SansSerif', 16)
         self.header_font.setBold(True)
         self.main_font = QtGui.QFont('SansSerif', 16)
         self.options_font = QtGui.QFont('Arial', 14)
+        self.param_palette = QtGui.QPalette()
+        self.param_palette.setColor(QtGui.QPalette.Foreground, QtCore.Qt.blue)
 
         # start main layout
         whole_layout = QtGui.QVBoxLayout()
@@ -43,6 +49,10 @@ class Window(QtGui.QMainWindow):
 
         # dive params
         self.dive_dict = {1: {'d': 0, 't': 0}, 2: {'d': 0, 't': 0}}
+        self.g_mix_val = 21
+        self.po2_value = 1.4
+        self.cylinder_size_val = 12
+        self.sac_rate_val = None
 
         # settings row
         settings_boxes = QtGui.QHBoxLayout()
@@ -60,6 +70,9 @@ class Window(QtGui.QMainWindow):
         plot_box.setFont(self.header_font)
         plot_layout = QtGui.QHBoxLayout()
         self.plot_widget = pg.PlotWidget()
+        self.plot_widget.setLabel('left', 'Depth', 'm')
+        self.plot_widget.setLabel('bottom', 'Time', 'mins')
+        self.plot_widget.setFont(self.main_font)
         plot_layout.addWidget(self.plot_widget)
         plot_box.setLayout(plot_layout)
         whole_layout.addWidget(plot_box)
@@ -88,6 +101,9 @@ class Window(QtGui.QMainWindow):
             pass
 
     def display_info(self):
+        pass
+
+    def display_tables(self):
         pass
 
     def dive_set_box(self):
@@ -163,7 +179,8 @@ class Window(QtGui.QMainWindow):
         for i in range(21, 37):
             self.g_mix.addItem(str(i))
         self.g_mix.setFont(self.options_font)
-        #QtGui.QComboBox.connect(self.g_mix, QtCore.SIGNAL('returnPressed()'), self.store_g_mix)
+        QtGui.QComboBox.connect(self.g_mix, QtCore.SIGNAL('activated(const QString&)'), self.store_g_mix)
+        self.g_mix.setCurrentIndex(0)
         self.g_mix.resize(50, 20)
         gas_box_row1.addWidget(self.g_mix)
 
@@ -176,7 +193,7 @@ class Window(QtGui.QMainWindow):
         for i in range(10, 51):
             self.sac.addItem(str(i))
         self.sac.setFont(self.options_font)
-        # QtGui.QComboBox.connect(self.g_mix, QtCore.SIGNAL('returnPressed()'), self.store_g_mix)
+        QtGui.QComboBox.connect(self.sac, QtCore.SIGNAL('activated(const QString&)'), self.store_sac)
         self.sac.resize(50, 20)
         gas_box_row1.addWidget(self.sac)
 
@@ -191,8 +208,9 @@ class Window(QtGui.QMainWindow):
         self.po2 = QtGui.QComboBox(self)
         for i in range(0, 7):
             self.po2.addItem('1.' + str(i))
+        self.po2.setCurrentIndex(4)
         self.po2.setFont(self.options_font)
-        # QtGui.QLineEdit.connect(self.g_mix, QtCore.SIGNAL('returnPressed()'), self.store_g_mix)
+        QtGui.QComboBox.connect(self.po2, QtCore.SIGNAL('activated(const QString&)'), self.store_po2)
         self.po2.resize(50, 20)
         gas_box_row2.addWidget(self.po2)
 
@@ -204,8 +222,9 @@ class Window(QtGui.QMainWindow):
         self.cyl_size = QtGui.QComboBox(self)
         for i in range(3, 16):
             self.cyl_size.addItem(str(i))
+        self.cyl_size.setCurrentIndex(9)
         self.cyl_size.setFont(self.options_font)
-        # QtGui.QLineEdit.connect(self.g_mix, QtCore.SIGNAL('returnPressed()'), self.store_g_mix)
+        QtGui.QComboBox.connect(self.cyl_size, QtCore.SIGNAL('activated(const QString&)'), self.store_cyl_size)
         self.cyl_size.resize(50, 20)
         gas_box_row2.addWidget(self.cyl_size)
 
@@ -228,6 +247,7 @@ class Window(QtGui.QMainWindow):
         pres_end_d1_lab.setFont(self.main_font)
         param_layout.addWidget(pres_end_d1_lab, 0, 0)
         self.pres_end_d1 = QtGui.QLabel('', self)
+        self.pres_end_d1.setPalette(self.param_palette)
         self.pres_end_d1.setFont(self.main_font)
         param_layout.addWidget(self.pres_end_d1, 0, 1)
 
@@ -236,6 +256,7 @@ class Window(QtGui.QMainWindow):
         param_layout.addWidget(pres_begin_d2_lab, 1, 0)
         self.pres_begin_d2 = QtGui.QLabel('', self)
         self.pres_begin_d2.setFont(self.main_font)
+        self.pres_begin_d2.setPalette(self.param_palette)
         param_layout.addWidget(self.pres_begin_d2, 1, 1)
 
         pres_end_d2_lab = QtGui.QLabel('Dive 2 end pressure:', self)
@@ -243,6 +264,7 @@ class Window(QtGui.QMainWindow):
         param_layout.addWidget(pres_end_d2_lab, 2, 0)
         self.pres_end_d2 = QtGui.QLabel('', self)
         self.pres_end_d2.setFont(self.main_font)
+        self.pres_end_d2.setPalette(self.param_palette)
         param_layout.addWidget(self.pres_end_d2, 2, 1)
 
         min_si_lab = QtGui.QLabel('Min surface interval:', self)
@@ -250,11 +272,16 @@ class Window(QtGui.QMainWindow):
         param_layout.addWidget(min_si_lab, 3, 0)
         self.min_si = QtGui.QLabel('', self)
         self.min_si.setFont(self.main_font)
+        self.min_si.setPalette(self.param_palette)
         param_layout.addWidget(self.min_si, 3, 1)
 
         mod_lab = QtGui.QLabel('MOD of gas:', self)
         mod_lab.setFont(self.main_font)
         param_layout.addWidget(mod_lab, 0, 2)
+        self.mod = QtGui.QLabel('', self)
+        self.mod.setFont(self.main_font)
+        self.mod.setPalette(self.param_palette)
+        param_layout.addWidget(self.mod, 0, 3)
 
         gas_vol_d1_lab = QtGui.QLabel('Gas volume dive 1 (l):', self)
         gas_vol_d1_lab.setFont(self.main_font)
@@ -289,6 +316,8 @@ class Window(QtGui.QMainWindow):
                 QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 2 exceeds the '
                                            'maximum for the specified depth!', QtGui.QMessageBox.Ok)
             else:
+
+                # pressure calculations
                 d1_end_pressure = padi_tables.get_end_pres(t1, d1)
                 self.pres_end_d1.setText(d1_end_pressure)
 
@@ -306,12 +335,15 @@ class Window(QtGui.QMainWindow):
                 d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
                 self.pres_end_d2.setText(d2_end_pressure)
 
+                # gas calculations
+                mod = dl.mod(self.g_mix_val, self.po2_value)
+                self.mod.setText(str(round(mod, 2)))
+
                 # plotting
                 plot_pen = pg.mkPen('b', width=2)
                 new_plot_data = create_profile(t1, d1, t2, d2, surface_interval)
                 self.plot_widget.plotItem.clear()
                 self.plot_widget.plot(new_plot_data[0], new_plot_data[1], pen=plot_pen)
-
 
     def store_dt1(self):
         self.dive_dict[1]['t'] = float(self.dt1.text())
@@ -324,6 +356,18 @@ class Window(QtGui.QMainWindow):
 
     def store_dd2(self):
         self.dive_dict[2]['d'] = float(self.dd2.text())
+
+    def store_g_mix(self, text):
+        self.g_mix_val = int(text)
+
+    def store_po2(self, text):
+        self.po2_value = float(text)
+
+    def store_sac(self, text):
+        self.sac_rate_val = int(text)
+
+    def store_cyl_size(self, text):
+        self.sac_rate_val = int(text)
 
 
 def create_profile(t1, d1, t2, d2, si):
