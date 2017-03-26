@@ -15,11 +15,18 @@ class Window(QtGui.QMainWindow):
         self.setGeometry(100, 100, 1050, 700)  # coords start from top left x, y, width, height
         self.setWindowTitle('Dive planner')
 
+        # p = self.palette()
+        # p.setColor(self.backgroundRole(), QtCore.Qt.gray)
+        # self.setPalette(p)
+
         # set toolbar
         run_plan = QtGui.QAction(QtGui.QIcon('images/play.png'), 'run', self)
         QtGui.QAction.connect(run_plan, QtCore.SIGNAL('triggered()'), self.run_calculation)
         toolbar = self.addToolBar('Run')
         toolbar.addAction(run_plan)
+        info = QtGui.QAction(QtGui.QIcon('images/info2.png'), 'info', self)
+        QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
+        toolbar.addAction(info)
         exit_planner = QtGui.QAction(QtGui.QIcon('images/exit.png'), 'exit', self)
         QtGui.QAction.connect(exit_planner, QtCore.SIGNAL('triggered()'), self.quit_app)
         toolbar.addAction(exit_planner)
@@ -45,6 +52,10 @@ class Window(QtGui.QMainWindow):
         whole_layout.addSpacerItem(QtGui.QSpacerItem(120, 10))
 
         # plot box
+        # invert default background foreground
+        pg.setConfigOption('background', 'w')
+        pg.setConfigOption('foreground', 'k')
+
         plot_box = QtGui.QGroupBox('Dive profile')
         plot_box.setFont(self.header_font)
         plot_layout = QtGui.QHBoxLayout()
@@ -75,6 +86,9 @@ class Window(QtGui.QMainWindow):
 
         else:
             pass
+
+    def display_info(self):
+        pass
 
     def dive_set_box(self):
         # settings group box
@@ -292,9 +306,11 @@ class Window(QtGui.QMainWindow):
                 d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
                 self.pres_end_d2.setText(d2_end_pressure)
 
+                # plotting
+                plot_pen = pg.mkPen('b', width=2)
                 new_plot_data = create_profile(t1, d1, t2, d2, surface_interval)
                 self.plot_widget.plotItem.clear()
-                self.plot_widget.plot(new_plot_data[0], new_plot_data[1])
+                self.plot_widget.plot(new_plot_data[0], new_plot_data[1], pen=plot_pen)
 
 
     def store_dt1(self):
