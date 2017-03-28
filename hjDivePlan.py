@@ -198,6 +198,15 @@ class Window(QtGui.QMainWindow):
         self.sac.resize(50, 20)
         gas_box_row1.addWidget(self.sac)
 
+        # fills between dives?
+        fills_label = QtGui.QLabel('Fills available? ', self)
+        fills_label.setFont(self.main_font)
+        fills_label.resize(200, 20)
+        gas_box_row1.addWidget(fills_label)
+        self.fills = QtGui.QCheckBox(self)
+        self.fills.resize(50, 20)
+        gas_box_row1.addWidget(self.fills)
+
         # row two
         gas_box_row2 = QtGui.QHBoxLayout()
 
@@ -228,6 +237,20 @@ class Window(QtGui.QMainWindow):
         QtGui.QComboBox.connect(self.cyl_size, QtCore.SIGNAL('activated(const QString&)'), self.store_cyl_size)
         self.cyl_size.resize(50, 20)
         gas_box_row2.addWidget(self.cyl_size)
+
+        # reserve strategy
+        reserve_label = QtGui.QLabel('Reserve: ', self)
+        reserve_label.setFont(self.main_font)
+        reserve_label.resize(200, 20)
+        gas_box_row2.addWidget(reserve_label)
+        self.reserve = QtGui.QComboBox(self)
+        self.reserve.addItem(str('50 bar'))
+        self.reserve.addItem(str('thirds'))
+        self.reserve.setCurrentIndex(1)
+        self.reserve.setFont(self.options_font)
+        QtGui.QComboBox.connect(self.reserve, QtCore.SIGNAL('activated(const QString&)'), self.store_reserve)
+        self.reserve.resize(50, 20)
+        gas_box_row2.addWidget(self.reserve)
 
         gas_set_stack = QtGui.QVBoxLayout()
         gas_set_stack.addLayout(gas_box_row1)
@@ -369,6 +392,9 @@ class Window(QtGui.QMainWindow):
 
     def store_cyl_size(self, text):
         self.sac_rate_val = int(text)
+
+    def store_reserve(self):
+        pass
 
 
 def create_profile(t1, d1, t2, d2, si):
