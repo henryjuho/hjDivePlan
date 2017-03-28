@@ -14,4 +14,9 @@ def mod(o2_mix, po2):
     depth_press = po2/fo2
     return pressure2depth(depth_press)
 
-# print mod(10)
+
+def litres4dive(sac, depth, time):
+    ltrs4dive = sac * time
+    dep_press = depth2pressure(depth)
+    ltrs_at_depth = ltrs4dive * dep_press
+    return ltrs_at_depth
