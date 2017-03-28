@@ -194,6 +194,7 @@ class Window(QtGui.QMainWindow):
             self.sac.addItem(str(i))
         self.sac.setFont(self.options_font)
         QtGui.QComboBox.connect(self.sac, QtCore.SIGNAL('activated(const QString&)'), self.store_sac)
+        self.sac.setCurrentIndex(15)
         self.sac.resize(50, 20)
         gas_box_row1.addWidget(self.sac)
 
