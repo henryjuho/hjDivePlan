@@ -310,7 +310,8 @@ def pressure_after_time(start_p, surf_time):
 
 
 def min_d2_start_pressure(d2_depth, d2_time):
-    max_times = padi_table_2[d2_depth]
+    closest_depth = get_depth_group(d2_depth)
+    max_times = padi_table_2[closest_depth]
     for x in sorted(max_times.keys(), reverse=True):
         abt = max_times[x][1]
         if d2_time > abt:
@@ -330,6 +331,7 @@ def min_surface(d1_end_p, d2_depth, d2_time):
 
 
 def repeat_dive_end_pressure(si_p_end, d2_depth, d2_time):
-    bottom_time_adjustment = padi_table_2[d2_depth][si_p_end][0]
+    closest_depth = get_depth_group(d2_depth)
+    bottom_time_adjustment = padi_table_2[closest_depth][si_p_end][0]
     adjusted_time = d2_time + bottom_time_adjustment
-    return get_end_pres(adjusted_time, d2_depth)
+    return get_end_pres(adjusted_time, closest_depth)
