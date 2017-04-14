@@ -1,3 +1,5 @@
+import math
+
 # pO2 = fO2 * absolute_pressure
 
 
@@ -20,3 +22,12 @@ def litres4dive(sac, depth, time):
     dep_press = depth2pressure(depth)
     ltrs_at_depth = ltrs4dive * dep_press
     return ltrs_at_depth
+
+
+def cyl_reqs(volume, cyl_size):
+    max_op_pres = 210.0
+    max_vol = max_op_pres * cyl_size
+    no_cyls = math.ceil(volume / max_vol)
+    per_cyl_v = volume / no_cyls
+    per_cyl_bar = per_cyl_v / cyl_size
+    return no_cyls, per_cyl_bar
