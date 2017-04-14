@@ -16,13 +16,10 @@ class Window(QtGui.QMainWindow):
         self.setGeometry(100, 100, 1050, 700)  # coords start from top left x, y, width, height
         self.setWindowTitle('Dive planner')
 
-        # p = self.palette()
-        # p.setColor(self.backgroundRole(), QtCore.Qt.gray)
-        # self.setPalette(p)
-
         # set toolbar
         run_plan = QtGui.QAction(QtGui.QIcon('images/play.png'), 'run', self)
         QtGui.QAction.connect(run_plan, QtCore.SIGNAL('triggered()'), self.run_calculation)
+        run_plan.setShortcut('Ctrl+R')
         toolbar = self.addToolBar('Run')
         toolbar.addAction(run_plan)
         tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'info', self)
@@ -32,6 +29,7 @@ class Window(QtGui.QMainWindow):
         QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
         toolbar.addAction(info)
         exit_planner = QtGui.QAction(QtGui.QIcon('images/exit.png'), 'exit', self)
+        exit_planner.setShortcut('Ctrl+Q')
         QtGui.QAction.connect(exit_planner, QtCore.SIGNAL('triggered()'), self.quit_app)
         toolbar.addAction(exit_planner)
 
@@ -81,10 +79,6 @@ class Window(QtGui.QMainWindow):
 
         # param box
         whole_layout.addWidget(self.param_box())
-
-        # push to top and set layout
-        # whole_layout.addStretch(1)
-        # self.setLayout(whole_layout)
 
         main_widget = QtGui.QWidget()
         main_widget.setLayout(whole_layout)
