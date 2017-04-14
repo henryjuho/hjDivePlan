@@ -329,6 +329,10 @@ class Window(QtGui.QMainWindow):
         cyl_req_lab = QtGui.QLabel('Cylinder requirements:', self)
         cyl_req_lab.setFont(self.main_font)
         param_layout.addWidget(cyl_req_lab, 3, 2)
+        self.cyl_req_result = QtGui.QLabel('', self)
+        self.cyl_req_result.setFont(self.main_font)
+        self.cyl_req_result.setPalette(self.param_palette)
+        param_layout.addWidget(self.cyl_req_result, 3, 3)
 
         param_box.setLayout(param_layout)
         return param_box
@@ -385,6 +389,21 @@ class Window(QtGui.QMainWindow):
 
                 self.gas_vol_d1_calced.setText(str(dive_1_volume) + ' L + ' + str(reserve_volume_1) + ' L reserve')
                 self.gas_vol_d2_calced.setText(str(dive_2_volume) + ' L + ' + str(reserve_volume_2) + ' L reserve')
+
+                dive_1_total_v = dive_1_volume + reserve_volume_1
+                dive_2_total_v = dive_2_volume + reserve_volume_2
+
+                if self.refill is True:
+                    cyls_needed_d1 = dl.cyl_reqs(dive_1_total_v, self.cylinder_size_val)
+                    cyls_needed_d2 = dl.cyl_reqs(dive_2_total_v, self.cylinder_size_val)
+                    self.cyl_req_result.setText('dive 1: ' + str(int(cyls_needed_d1[0])) + ' @ ' +
+                                                str(cyls_needed_d1[1]) + ' bar, '
+                                                'dive 2:  ' + str(int(cyls_needed_d2[0])) + ' @ ' +
+                                                str(cyls_needed_d2[1]) + ' bar')
+                else:
+                    cyls_needed_both = dl.cyl_reqs(dive_1_total_v + dive_2_total_v, self.cylinder_size_val)
+                    self.cyl_req_result.setText('both dives: ' + str(int(cyls_needed_both[0])) + ' @ ' +
+                                                str(cyls_needed_both[1]) + ' bar')
 
                 # plotting
                 plot_pen = pg.mkPen('b', width=2)
