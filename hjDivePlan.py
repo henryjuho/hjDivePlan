@@ -52,7 +52,9 @@ class Window(QtGui.QMainWindow):
         self.g_mix_val = 21
         self.po2_value = 1.4
         self.cylinder_size_val = 12
-        self.sac_rate_val = None
+        self.sac_rate_val = 25
+        self.reserve_val = 'thirds'
+        self.refill = True
 
         # settings row
         settings_boxes = QtGui.QHBoxLayout()
@@ -204,6 +206,7 @@ class Window(QtGui.QMainWindow):
         fills_label.resize(200, 20)
         gas_box_row1.addWidget(fills_label)
         self.fills = QtGui.QCheckBox(self)
+        QtGui.QCheckBox.connect(self.fills, QtCore.SIGNAL('stateChanged (int)'), self.store_fill)
         self.fills.resize(50, 20)
         gas_box_row1.addWidget(self.fills)
 
@@ -310,10 +313,18 @@ class Window(QtGui.QMainWindow):
         gas_vol_d1_lab = QtGui.QLabel('Gas volume dive 1 (l):', self)
         gas_vol_d1_lab.setFont(self.main_font)
         param_layout.addWidget(gas_vol_d1_lab, 1, 2)
+        self.gas_vol_d1_calced = QtGui.QLabel('', self)
+        self.gas_vol_d1_calced.setFont(self.main_font)
+        self.gas_vol_d1_calced.setPalette(self.param_palette)
+        param_layout.addWidget(self.gas_vol_d1_calced, 1, 3)
 
         gas_vol_d2_lab = QtGui.QLabel('Gas volume dive 2 (l):', self)
         gas_vol_d2_lab.setFont(self.main_font)
         param_layout.addWidget(gas_vol_d2_lab, 2, 2)
+        self.gas_vol_d2_calced = QtGui.QLabel('', self)
+        self.gas_vol_d2_calced.setFont(self.main_font)
+        self.gas_vol_d2_calced.setPalette(self.param_palette)
+        param_layout.addWidget(self.gas_vol_d2_calced, 2, 3)
 
         cyl_req_lab = QtGui.QLabel('Cylinder requirements:', self)
         cyl_req_lab.setFont(self.main_font)
@@ -362,6 +373,18 @@ class Window(QtGui.QMainWindow):
                 # gas calculations
                 mod = dl.mod(self.g_mix_val, self.po2_value)
                 self.mod.setText(str(round(mod, 2)))
+                dive_1_volume = self.sac_rate_val * dl.depth2pressure(self.dive_dict[1]['d']) * self.dive_dict[1]['t']
+                dive_2_volume = self.sac_rate_val * dl.depth2pressure(self.dive_dict[2]['d']) * self.dive_dict[2]['t']
+
+                if self.reserve_val == 'thirds':
+                    reserve_volume_1 = dive_1_volume / 2.0
+                    reserve_volume_2 = dive_2_volume / 2.0
+                else:
+                    reserve_volume_1 = 50 * self.cylinder_size_val
+                    reserve_volume_2 = 50 * self.cylinder_size_val
+
+                self.gas_vol_d1_calced.setText(str(dive_1_volume) + ' L + ' + str(reserve_volume_1) + ' L reserve')
+                self.gas_vol_d2_calced.setText(str(dive_2_volume) + ' L + ' + str(reserve_volume_2) + ' L reserve')
 
                 # plotting
                 plot_pen = pg.mkPen('b', width=2)
@@ -391,10 +414,16 @@ class Window(QtGui.QMainWindow):
         self.sac_rate_val = int(text)
 
     def store_cyl_size(self, text):
-        self.sac_rate_val = int(text)
+        self.cylinder_size_val = int(text)
 
-    def store_reserve(self):
-        pass
+    def store_reserve(self, text):
+        self.reserve_val = text
+
+    def store_fill(self, state):
+        if state == 2:
+            self.refill = True
+        else:
+            self.refill = False
 
 
 def create_profile(t1, d1, t2, d2, si):
