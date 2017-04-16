@@ -46,7 +46,6 @@ class TablePopup(QtGui.QDialog):
         self.verticalLayout.addWidget(self.table_viewer)
 
 
-
 class Window(QtGui.QMainWindow):
 
     def __init__(self):
@@ -165,10 +164,25 @@ class Window(QtGui.QMainWindow):
             for i in range(0, len(st_rows)):
                 st_data[i].append('-'.join(start_pres_data[st_rows[i]]))
 
-        table_2 = TablePopup([''] + st_head, st_data, 'Surface table', 10)
-        table_2.exec_()
+        table_st = TablePopup([''] + st_head, st_data, 'Surface table', 10)
+        table_st.exec_()
 
         # get subsequent dives table
+        t2_head = sorted(padi_tables.padi_table_2.keys())
+        t2_rows = sorted(padi_tables.end_pressure_groups)
+        t2_data = [[x] for x in t2_rows]
+
+        for depth in t2_head:
+            for i in range(0, len(t2_rows)):
+                table_2_row_data = padi_tables.padi_table_2[depth]
+                try:
+                    time_data = str(table_2_row_data[t2_rows[i]][0]) + ', ' + str(table_2_row_data[t2_rows[i]][1])
+                except KeyError:
+                    time_data = '0, 0'
+                t2_data[i].append(time_data)
+
+        table_2 = TablePopup([''] + t2_head, t2_data, 'Repetitive dive table', 20)
+        table_2.exec_()
 
     def dive_set_box(self):
         # settings group box
