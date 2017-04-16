@@ -9,6 +9,44 @@ import padi_tables
 import daltons_utils as dl
 
 
+class MyTableModel(QtCore.QAbstractTableModel):
+    def __init__(self, datain, header, parent=None, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        self.arraydata = datain
+        self.header = header
+
+    def rowCount(self, parent):
+        return len(self.arraydata)
+
+    def columnCount(self, parent):
+        return len(self.arraydata[0])
+
+    def data(self, index, role):
+        if not index.isValid():
+            return QtCore.QVariant()
+        elif role != QtCore.Qt.DisplayRole:
+            return QtCore.QVariant()
+        return QtCore.QVariant(self.arraydata[index.row()][index.column()])
+
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.header[col]
+        return None
+
+
+class TablePopup(QtGui.QDialog):
+    def __init__(self, header, my_array, title, offset, parent=None):
+        super(TablePopup, self).__init__(parent)
+
+        self.setWindowTitle(title)
+        self.setGeometry(120+offset, 120, 1000, 500)
+        self.table_viewer = QtGui.QTableView(self)
+        self.table_viewer.setModel(MyTableModel(my_array, header))
+        self.verticalLayout = QtGui.QVBoxLayout(self)
+        self.verticalLayout.addWidget(self.table_viewer)
+
+
+
 class Window(QtGui.QMainWindow):
 
     def __init__(self):
@@ -100,7 +138,37 @@ class Window(QtGui.QMainWindow):
         pass
 
     def display_tables(self):
-        pass
+
+        # get table 1 data into shape and display
+        t1_head = sorted(padi_tables.padi_table_1.keys())
+        t1_rows = sorted(padi_tables.end_pressure_groups)
+        t1_data = [[x] for x in t1_rows]
+
+        for depth in t1_head:
+            flipped_dict = {x[1]: x[0] for x in padi_tables.padi_table_1[depth].items()}
+            for i in range(0, len(t1_rows)):
+                try:
+                    abt = flipped_dict[t1_rows[i]]
+                except KeyError:
+                    abt = 'NA'
+                t1_data[i].append(abt)
+
+        table_1 = TablePopup([''] + t1_head, t1_data, 'Dive table', 0)
+        table_1.exec_()
+
+        # get surface table data into shape and display
+        st_head = t1_rows
+        st_rows = t1_rows
+        st_data = [[x] for x in t1_rows]
+        for x in st_head:
+            start_pres_data = padi_tables.surface_table[x]
+            for i in range(0, len(st_rows)):
+                st_data[i].append('-'.join(start_pres_data[st_rows[i]]))
+
+        table_2 = TablePopup([''] + st_head, st_data, 'Surface table', 10)
+        table_2.exec_()
+
+        # get subsequent dives table
 
     def dive_set_box(self):
         # settings group box
