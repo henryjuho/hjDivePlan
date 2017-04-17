@@ -51,13 +51,13 @@ class Window(QtGui.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.setGeometry(100, 100, 1050, 700)  # coords start from top left x, y, width, height
-        self.setWindowTitle('Dive planner')
+        self.setWindowTitle('hjDivePlan')
 
         # set toolbar
+        toolbar = QtGui.QToolBar(self)
         run_plan = QtGui.QAction(QtGui.QIcon('images/play.png'), 'run', self)
         QtGui.QAction.connect(run_plan, QtCore.SIGNAL('triggered()'), self.run_calculation)
         run_plan.setShortcut('Ctrl+R')
-        toolbar = self.addToolBar('Run')
         toolbar.addAction(run_plan)
         tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'info', self)
         QtGui.QAction.connect(tables, QtCore.SIGNAL('triggered()'), self.display_tables)
@@ -69,6 +69,7 @@ class Window(QtGui.QMainWindow):
         exit_planner.setShortcut('Ctrl+Q')
         QtGui.QAction.connect(exit_planner, QtCore.SIGNAL('triggered()'), self.quit_app)
         toolbar.addAction(exit_planner)
+        self.addToolBar(QtCore.Qt.LeftToolBarArea, toolbar)
 
         # fonts
         self.header_font = QtGui.QFont('SansSerif', 16)
