@@ -634,7 +634,6 @@ def create_profile(t1, d1, t2, d2, si):
     interval = si
 
     # PROFILE
-    # todo fix for single dive
     x = [0, desc_1_time, d1_bt, asc_1_time2safety, stop_t, safety2surf]
     y = [0, -d1, -d1, -6, -6, 0]
 
