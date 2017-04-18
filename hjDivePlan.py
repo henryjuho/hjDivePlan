@@ -9,6 +9,78 @@ import padi_tables
 import daltons_utils as dl
 
 
+class InfoPopup(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(InfoPopup, self).__init__(parent)
+        self.setGeometry(325, 100, 625, 400)
+        self.setWindowTitle('')
+
+        # info fonts
+        info_header_font = QtGui.QFont('SansSerif', 25)
+        info_header_font.setBold(True)
+        info_head_col = QtGui.QPalette()
+        info_head_col.setColor(QtGui.QPalette.Foreground, QtCore.Qt.blue)
+        sub_head_font = QtGui.QFont('SansSerif', 20)
+        sub_head_font.setBold(True)
+        text_font = QtGui.QFont('Arial', 15)
+
+        # content
+        info_layout = QtGui.QVBoxLayout()
+        title_text = QtGui.QLabel('hjDivePlan')
+        title_text.setFont(info_header_font)
+        title_text.setPalette(info_head_col)
+        info_layout.addWidget(title_text)
+
+        info_layout.addStretch(1)
+
+        about_title = QtGui.QLabel('About')
+        about_title.setFont(sub_head_font)
+        info_layout.addWidget(about_title)
+
+        about_text = ('This program can be used to plan up to two dives, calculating gas requirements, '
+                      'minimum surface intervals and other parameters according to the PADI recreational '
+                      'dive planner (RDP) which can be found here:')
+        about_text_qlabel = QtGui.QLabel(about_text)
+        about_text_qlabel.setWordWrap(True)
+        about_text_qlabel.setFont(text_font)
+        info_layout.addWidget(about_text_qlabel)
+
+        rdp_link = QtGui.QLabel('''<a href='http://elearning.padi.com/company0/tools/RDP_Table%20Met.pdf'>
+                                http://elearning.padi.com/company0/tools/RDP_Table%20Met.pdf</a>''')
+        rdp_link.setOpenExternalLinks(True)
+        rdp_link.setFont(text_font)
+        info_layout.addWidget(rdp_link)
+
+        doc_text = 'Full documentation for this package can be found on github at the below link:'
+        doc_text_qlabel = QtGui.QLabel(doc_text)
+        doc_text_qlabel.setFont(text_font)
+        info_layout.addWidget(doc_text_qlabel)
+
+        readme_link = QtGui.QLabel('''<a href='https://github.com/henryjuho/hjDivePlan'>
+                                   https://github.com/henryjuho/hjDivePlan</a>''')
+        readme_link.setOpenExternalLinks(True)
+        readme_link.setFont(text_font)
+        info_layout.addWidget(readme_link)
+
+        info_layout.addStretch(2)
+
+        disclaimer_title = QtGui.QLabel('Disclaimer')
+        disclaimer_title.setFont(sub_head_font)
+        info_layout.addWidget(disclaimer_title)
+
+        disclaimer_text = ('The accuracy of this program cannot be guaranteed and should by no means be used '
+                           'as a sole source of dive planning. Also it should be noted that all dives are '
+                           'planned as if on air, even if gas mix > 21% 02.')
+        disclaimer_text_qlabel = QtGui.QLabel(disclaimer_text)
+        disclaimer_text_qlabel.setWordWrap(True)
+        disclaimer_text_qlabel.setFont(text_font)
+        info_layout.addWidget(disclaimer_text_qlabel)
+
+        info_layout.addStretch(3)
+
+        self.setLayout(info_layout)
+
+
 class MyTableModel(QtCore.QAbstractTableModel):
     def __init__(self, datain, header, parent=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
@@ -61,9 +133,11 @@ class Window(QtGui.QMainWindow):
         toolbar.addAction(run_plan)
         tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'info', self)
         QtGui.QAction.connect(tables, QtCore.SIGNAL('triggered()'), self.display_tables)
+        tables.setShortcut('Ctrl+T')
         toolbar.addAction(tables)
         info = QtGui.QAction(QtGui.QIcon('images/info2.png'), 'info', self)
         QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
+        info.setShortcut('Ctrl+I')
         toolbar.addAction(info)
         exit_planner = QtGui.QAction(QtGui.QIcon('images/exit.png'), 'exit', self)
         exit_planner.setShortcut('Ctrl+Q')
@@ -135,7 +209,8 @@ class Window(QtGui.QMainWindow):
             pass
 
     def display_info(self):
-        pass
+        info = InfoPopup()
+        info.exec_()
 
     def display_tables(self):
 
