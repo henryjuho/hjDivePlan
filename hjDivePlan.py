@@ -164,7 +164,7 @@ class Window(QtGui.QMainWindow):
         self.cylinder_size_val = 12
         self.sac_rate_val = 25
         self.reserve_val = 'thirds'
-        self.refill = True
+        self.refill = False
 
         # settings row
         settings_boxes = QtGui.QHBoxLayout()
@@ -503,27 +503,34 @@ class Window(QtGui.QMainWindow):
             if padi_tables.max_bottom_time(d1) <= t1:
                 QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 1 exceeds the '
                                            'maximum for the specified depth!', QtGui.QMessageBox.Ok)
-            elif padi_tables.max_bottom_time(d2) <= t2:
+            elif d2 != 0 and padi_tables.max_bottom_time(d2) <= t2:
                 QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 2 exceeds the '
                                            'maximum for the specified depth!', QtGui.QMessageBox.Ok)
             else:
+                if d2 == t2 == 0:
+                    single = True
+                else:
+                    single = False
 
                 # pressure calculations
                 d1_end_pressure = padi_tables.get_end_pres(t1, d1)
                 self.pres_end_d1.setText(d1_end_pressure)
 
-                min_d2_start_pressure = padi_tables.min_d2_start_pressure(d2, t2)
-                if min_d2_start_pressure > d1_end_pressure:
-                    d2_start_pressure = d1_end_pressure
+                if single is True:
+                    d2_start_pressure = '-'
+                    surface_interval = '-'
+                    d2_end_pressure = '-'
                 else:
-                    d2_start_pressure = min_d2_start_pressure
+                    min_d2_start_pressure = padi_tables.min_d2_start_pressure(d2, t2)
+                    if min_d2_start_pressure > d1_end_pressure:
+                        d2_start_pressure = d1_end_pressure
+                    else:
+                        d2_start_pressure = min_d2_start_pressure
+                    surface_interval = padi_tables.min_surface(d1_end_pressure, d2, t2)
+                    d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
 
                 self.pres_begin_d2.setText(d2_start_pressure)
-
-                surface_interval = padi_tables.min_surface(d1_end_pressure, d2, t2)
                 self.min_si.setText(str(surface_interval))
-
-                d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
                 self.pres_end_d2.setText(d2_end_pressure)
 
                 # gas calculations
@@ -534,10 +541,16 @@ class Window(QtGui.QMainWindow):
 
                 if self.reserve_val == 'thirds':
                     reserve_volume_1 = dive_1_volume / 2.0
-                    reserve_volume_2 = dive_2_volume / 2.0
+                    if single is False:
+                        reserve_volume_2 = dive_2_volume / 2.0
+                    else:
+                        reserve_volume_2 = 0
                 else:
                     reserve_volume_1 = 50 * self.cylinder_size_val
-                    reserve_volume_2 = 50 * self.cylinder_size_val
+                    if single is False:
+                        reserve_volume_2 = 50 * self.cylinder_size_val
+                    else:
+                        reserve_volume_2 = 0
 
                 self.gas_vol_d1_calced.setText(str(dive_1_volume) + ' L + ' + str(reserve_volume_1) + ' L reserve')
                 self.gas_vol_d2_calced.setText(str(dive_2_volume) + ' L + ' + str(reserve_volume_2) + ' L reserve')
@@ -547,7 +560,10 @@ class Window(QtGui.QMainWindow):
 
                 if self.refill is True:
                     cyls_needed_d1 = dl.cyl_reqs(dive_1_total_v, self.cylinder_size_val)
-                    cyls_needed_d2 = dl.cyl_reqs(dive_2_total_v, self.cylinder_size_val)
+                    if single is False:
+                        cyls_needed_d2 = dl.cyl_reqs(dive_2_total_v, self.cylinder_size_val)
+                    else:
+                        cyls_needed_d2 = [0, 0]
                     self.cyl_req_result.setText('dive 1: ' + str(int(cyls_needed_d1[0])) + ' @ ' +
                                                 str(cyls_needed_d1[1]) + ' bar, '
                                                 'dive 2:  ' + str(int(cyls_needed_d2[0])) + ' @ ' +
@@ -618,10 +634,15 @@ def create_profile(t1, d1, t2, d2, si):
     interval = si
 
     # PROFILE
-    x = [0, desc_1_time, d1_bt, asc_1_time2safety, stop_t, safety2surf, interval,
-         desc_2_time, d2_bt, asc_2_time2safety, stop_t, safety2surf]
+    # todo fix for single dive
+    x = [0, desc_1_time, d1_bt, asc_1_time2safety, stop_t, safety2surf]
+    y = [0, -d1, -d1, -6, -6, 0]
+
+    if not d2 == t2 == 0:
+        x += [interval, desc_2_time, d2_bt, asc_2_time2safety, stop_t, safety2surf]
+        y += [0, -d2, -d2, -6, -6, 0]
+
     x_cum = np.cumsum(x)
-    y = [0, -d1, -d1, -6, -6, 0, 0, -d2, -d2, -6, -6, 0]
 
     return x_cum, y
 
