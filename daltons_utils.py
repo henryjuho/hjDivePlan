@@ -25,7 +25,7 @@ def litres4dive(sac, depth, time):
 
 
 def cyl_reqs(volume, cyl_size):
-    max_op_pres = 210.0
+    max_op_pres = 232.0
     max_vol = max_op_pres * cyl_size
     no_cyls = math.ceil(volume / max_vol)
     per_cyl_v = volume / no_cyls
