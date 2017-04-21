@@ -275,7 +275,7 @@ class Window(QtGui.QMainWindow):
         d1time.resize(200, 20)
         settings_layout_time.addWidget(d1time)
         self.dt1 = QtGui.QLineEdit(self)
-        QtGui.QLineEdit.connect(self.dt1, QtCore.SIGNAL('returnPressed()'), self.store_dt1)
+        QtGui.QLineEdit.connect(self.dt1, QtCore.SIGNAL('textChanged (const QString&)'), self.store_dt1)
         self.dt1.resize(50, 20)
         self.dt1.setPlaceholderText('time 1')
         self.dt1.setFont(self.options_font)
@@ -285,7 +285,7 @@ class Window(QtGui.QMainWindow):
         d1depth.resize(200, 20)
         settings_layout_depth.addWidget(d1depth)
         self.dd1 = QtGui.QLineEdit(self)
-        QtGui.QLineEdit.connect(self.dd1, QtCore.SIGNAL('returnPressed()'), self.store_dd1)
+        QtGui.QLineEdit.connect(self.dd1, QtCore.SIGNAL('textChanged (const QString&)'), self.store_dd1)
         self.dd1.resize(50, 20)
         self.dd1.setPlaceholderText('depth 1')
         self.dd1.setFont(self.options_font)
@@ -297,7 +297,7 @@ class Window(QtGui.QMainWindow):
         d2time.resize(200, 20)
         settings_layout_time.addWidget(d2time)
         self.dt2 = QtGui.QLineEdit(self)
-        QtGui.QLineEdit.connect(self.dt2, QtCore.SIGNAL('returnPressed()'), self.store_dt2)
+        QtGui.QLineEdit.connect(self.dt2, QtCore.SIGNAL('textChanged (const QString&)'), self.store_dt2)
         self.dt2.resize(50, 20)
         self.dt2.setPlaceholderText('time 2')
         self.dt2.setFont(self.options_font)
@@ -307,7 +307,7 @@ class Window(QtGui.QMainWindow):
         d2depth.resize(200, 20)
         settings_layout_depth.addWidget(d2depth)
         self.dd2 = QtGui.QLineEdit(self)
-        QtGui.QLineEdit.connect(self.dd2, QtCore.SIGNAL('returnPressed()'), self.store_dd2)
+        QtGui.QLineEdit.connect(self.dd2, QtCore.SIGNAL('textChanged (const QString&)'), self.store_dd2)
         self.dd2.resize(50, 20)
         self.dd2.setPlaceholderText('depth 2')
         self.dd2.setFont(self.options_font)
@@ -582,17 +582,25 @@ class Window(QtGui.QMainWindow):
                 self.plot_widget.plotItem.clear()
                 self.plot_widget.plot(new_plot_data[0], new_plot_data[1], pen=plot_pen)
 
-    def store_dt1(self):
-        self.dive_dict[1]['t'] = float(self.dt1.text())
+    def store_dt1(self, text):
+        if text == '':
+            text = 0
+        self.dive_dict[1]['t'] = float(text)
 
-    def store_dt2(self):
-        self.dive_dict[2]['t'] = float(self.dt2.text())
+    def store_dt2(self, text):
+        if text == '':
+            text = 0
+        self.dive_dict[2]['t'] = float(text)
 
-    def store_dd1(self):
-        self.dive_dict[1]['d'] = float(self.dd1.text())
+    def store_dd1(self, text):
+        if text == '':
+            text = 0
+        self.dive_dict[1]['d'] = float(text)
 
-    def store_dd2(self):
-        self.dive_dict[2]['d'] = float(self.dd2.text())
+    def store_dd2(self, text):
+        if text == '':
+            text = 0
+        self.dive_dict[2]['d'] = float(text)
 
     def store_g_mix(self, text):
         self.g_mix_val = int(text)
