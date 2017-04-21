@@ -506,6 +506,9 @@ class Window(QtGui.QMainWindow):
             elif d2 != 0 and padi_tables.max_bottom_time(d2) <= t2:
                 QtGui.QMessageBox.critical(self, 'Bottom time exceeded', 'The bottom time for dive 2 exceeds the '
                                            'maximum for the specified depth!', QtGui.QMessageBox.Ok)
+            elif d1 > dl.mod(self.g_mix_val, self.po2_value) or d2 > dl.mod(self.g_mix_val, self.po2_value):
+                QtGui.QMessageBox.critical(self, 'MOD exceeded', 'The maximum operating depth of your gas mix is less '
+                                           'than your dive depth!', QtGui.QMessageBox.Ok)
             else:
                 if d2 == t2 == 0:
                     single = True
