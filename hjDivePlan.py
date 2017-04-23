@@ -131,10 +131,18 @@ class Window(QtGui.QMainWindow):
         QtGui.QAction.connect(run_plan, QtCore.SIGNAL('triggered()'), self.run_calculation)
         run_plan.setShortcut('Ctrl+R')
         toolbar.addAction(run_plan)
-        tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'info', self)
+        tables = QtGui.QAction(QtGui.QIcon('images/tables.png'), 'tables', self)
         QtGui.QAction.connect(tables, QtCore.SIGNAL('triggered()'), self.display_tables)
         tables.setShortcut('Ctrl+T')
         toolbar.addAction(tables)
+        save = QtGui.QAction(QtGui.QIcon('images/save.png'), 'save', self)
+        QtGui.QAction.connect(save, QtCore.SIGNAL('triggered()'), self.save_plan)
+        tables.setShortcut('Ctrl+S')
+        toolbar.addAction(save)
+        print_button = QtGui.QAction(QtGui.QIcon('images/print.png'), 'print', self)
+        QtGui.QAction.connect(save, QtCore.SIGNAL('triggered()'), self.print_plan)
+        tables.setShortcut('Ctrl+P')
+        toolbar.addAction(print_button)
         info = QtGui.QAction(QtGui.QIcon('images/info2.png'), 'info', self)
         QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
         info.setShortcut('Ctrl+I')
@@ -259,6 +267,12 @@ class Window(QtGui.QMainWindow):
 
         table_2 = TablePopup([''] + t2_head, t2_data, 'Repetitive dive table', 20)
         table_2.exec_()
+
+    def save_plan(self):
+        pass
+
+    def print_plan(self):
+        pass
 
     def dive_set_box(self):
         # settings group box
@@ -492,8 +506,9 @@ class Window(QtGui.QMainWindow):
     def run_calculation(self):
 
         # if dive data for at least dive one not entered warns
-        if 0 in self.dive_dict[1].values():
-            QtGui.QMessageBox.warning(self, 'No data', 'You must enter data for at least 1 dive!', QtGui.QMessageBox.Ok)
+        if 0 in self.dive_dict[1].values() or self.dive_dict[2].values().count(0) == 1:
+            QtGui.QMessageBox.warning(self, 'No data', 'You must enter complete data for at least 1 dive!',
+                                      QtGui.QMessageBox.Ok)
         else:
             t1 = self.dive_dict[1]['t']
             d1 = self.dive_dict[1]['d']
