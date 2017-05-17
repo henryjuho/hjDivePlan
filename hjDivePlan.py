@@ -4,10 +4,12 @@ import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 import pyqtgraph as pg
+import pyqtgraph.exporters
 import numpy as np
 import padi_tables
 import daltons_utils as dl
-
+import pypandoc
+import os
 
 class InfoPopup(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -270,12 +272,10 @@ class Window(QtGui.QMainWindow):
 
     def save_plan(self):
         try:
-            self.output_plan()
             name = QtGui.QFileDialog.getSaveFileName(self, 'Save Plan')
-            plan_file = open(name, 'w')
-            text = self.textEdit.toPlainText()
-            plan_file.write(text)
-            plan_file.close()
+            mk_down_str = self.output_plan(name)
+            pypandoc.convert_text(mk_down_str, 'pdf', format='md', outputfile=name + '.pdf')
+            os.remove(name + '.png')
         except AttributeError:
             QtGui.QMessageBox.warning(self, 'No plan', 'You must make a plan to save!', QtGui.QMessageBox.Ok)
 
@@ -561,8 +561,9 @@ class Window(QtGui.QMainWindow):
                 self.pres_end_d2.setText(self.d2_end_pressure)
 
                 # gas calculations
-                mod = dl.mod(self.g_mix_val, self.po2_value)
-                self.mod.setText(str(round(mod, 2)))
+                self.mod_val = dl.mod(self.g_mix_val, self.po2_value)
+
+                self.mod.setText(str(round(self.mod_val, 2)))
                 dive_1_volume = self.sac_rate_val * dl.depth2pressure(self.dive_dict[1]['d']) * self.dive_dict[1]['t']
                 dive_2_volume = self.sac_rate_val * dl.depth2pressure(self.dive_dict[2]['d']) * self.dive_dict[2]['t']
 
@@ -647,7 +648,7 @@ class Window(QtGui.QMainWindow):
         else:
             self.refill = False
 
-    def output_plan(self):
+    def output_plan(self, out_name):
         md_dive_data = ('# Dive parameters\n'
                         '\n'
                         '|          | Depth  | Time  | Start pressure | End pressure | Gas Volume (l) |\n'
@@ -664,9 +665,21 @@ class Window(QtGui.QMainWindow):
 
         md_gas_data = ('# Gas parameters\n'
                        '\n'
-                       '')
+                       '| Mix  | pO2  | SAC rate | MOD  |\n'
+                       '|:-----|:----:|:--------:|:----:|\n'
+                       '| {}   | {}   | {}       | {}   |\n\n'
+                       '').format(self.g_mix_val, self.po2_value, self.sac_rate_val, self.mod_val)
 
-        print md_dive_data
+        # save plot
+        exporter = pg.exporters.ImageExporter(self.plot_widget.plotItem)
+        plot_name = out_name + '.png'
+        exporter.export(plot_name)
+
+        plot_md = ('# Dive profile\n'
+                   '\n'
+                   '![profile]({})\n').format(plot_name)
+
+        return ''.join([md_dive_data, md_gas_data, plot_md])
 
 
 def create_profile(t1, d1, t2, d2, si):
