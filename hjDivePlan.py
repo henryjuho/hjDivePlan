@@ -269,7 +269,16 @@ class Window(QtGui.QMainWindow):
         table_2.exec_()
 
     def save_plan(self):
-        pass
+        try:
+            self.output_plan()
+            name = QtGui.QFileDialog.getSaveFileName(self, 'Save Plan')
+            plan_file = open(name, 'w')
+            text = self.textEdit.toPlainText()
+            plan_file.write(text)
+            plan_file.close()
+        except AttributeError:
+            QtGui.QMessageBox.warning(self, 'No plan', 'You must make a plan to save!', QtGui.QMessageBox.Ok)
+
 
     def print_plan(self):
         pass
@@ -531,25 +540,25 @@ class Window(QtGui.QMainWindow):
                     single = False
 
                 # pressure calculations
-                d1_end_pressure = padi_tables.get_end_pres(t1, d1)
-                self.pres_end_d1.setText(d1_end_pressure)
+                self.d1_end_pressure = padi_tables.get_end_pres(t1, d1)
+                self.pres_end_d1.setText(self.d1_end_pressure)
 
                 if single is True:
-                    d2_start_pressure = '-'
-                    surface_interval = '-'
-                    d2_end_pressure = '-'
+                    self.d2_start_pressure = '-'
+                    self.surface_interval = '-'
+                    self.d2_end_pressure = '-'
                 else:
                     min_d2_start_pressure = padi_tables.min_d2_start_pressure(d2, t2)
-                    if min_d2_start_pressure > d1_end_pressure:
-                        d2_start_pressure = d1_end_pressure
+                    if min_d2_start_pressure > self.d1_end_pressure:
+                        self.d2_start_pressure = self.d1_end_pressure
                     else:
-                        d2_start_pressure = min_d2_start_pressure
-                    surface_interval = padi_tables.min_surface(d1_end_pressure, d2, t2)
-                    d2_end_pressure = padi_tables.repeat_dive_end_pressure(d2_start_pressure, d2, t2)
+                        self.d2_start_pressure = min_d2_start_pressure
+                    self.surface_interval = padi_tables.min_surface(self.d1_end_pressure, d2, t2)
+                    self.d2_end_pressure = padi_tables.repeat_dive_end_pressure(self.d2_start_pressure, d2, t2)
 
-                self.pres_begin_d2.setText(d2_start_pressure)
-                self.min_si.setText(str(surface_interval))
-                self.pres_end_d2.setText(d2_end_pressure)
+                self.pres_begin_d2.setText(self.d2_start_pressure)
+                self.min_si.setText(str(self.surface_interval))
+                self.pres_end_d2.setText(self.d2_end_pressure)
 
                 # gas calculations
                 mod = dl.mod(self.g_mix_val, self.po2_value)
@@ -573,13 +582,13 @@ class Window(QtGui.QMainWindow):
                 self.gas_vol_d1_calced.setText(str(dive_1_volume) + ' L + ' + str(reserve_volume_1) + ' L reserve')
                 self.gas_vol_d2_calced.setText(str(dive_2_volume) + ' L + ' + str(reserve_volume_2) + ' L reserve')
 
-                dive_1_total_v = dive_1_volume + reserve_volume_1
-                dive_2_total_v = dive_2_volume + reserve_volume_2
+                self.dive_1_total_v = dive_1_volume + reserve_volume_1
+                self.dive_2_total_v = dive_2_volume + reserve_volume_2
 
                 if self.refill is True:
-                    cyls_needed_d1 = dl.cyl_reqs(dive_1_total_v, self.cylinder_size_val)
+                    cyls_needed_d1 = dl.cyl_reqs(self.dive_1_total_v, self.cylinder_size_val)
                     if single is False:
-                        cyls_needed_d2 = dl.cyl_reqs(dive_2_total_v, self.cylinder_size_val)
+                        cyls_needed_d2 = dl.cyl_reqs(self.dive_2_total_v, self.cylinder_size_val)
                     else:
                         cyls_needed_d2 = [0, 0]
                     self.cyl_req_result.setText('dive 1: ' + str(int(cyls_needed_d1[0])) + ' @ ' +
@@ -587,13 +596,13 @@ class Window(QtGui.QMainWindow):
                                                 'dive 2:  ' + str(int(cyls_needed_d2[0])) + ' @ ' +
                                                 str(cyls_needed_d2[1]) + ' bar')
                 else:
-                    cyls_needed_both = dl.cyl_reqs(dive_1_total_v + dive_2_total_v, self.cylinder_size_val)
+                    cyls_needed_both = dl.cyl_reqs(self.dive_1_total_v + self.dive_2_total_v, self.cylinder_size_val)
                     self.cyl_req_result.setText('both dives: ' + str(int(cyls_needed_both[0])) + ' @ ' +
                                                 str(cyls_needed_both[1]) + ' bar')
 
                 # plotting
                 plot_pen = pg.mkPen('b', width=2)
-                new_plot_data = create_profile(t1, d1, t2, d2, surface_interval)
+                new_plot_data = create_profile(t1, d1, t2, d2, self.surface_interval)
                 self.plot_widget.plotItem.clear()
                 self.plot_widget.plot(new_plot_data[0], new_plot_data[1], pen=plot_pen)
 
@@ -637,6 +646,27 @@ class Window(QtGui.QMainWindow):
             self.refill = True
         else:
             self.refill = False
+
+    def output_plan(self):
+        md_dive_data = ('# Dive parameters\n'
+                        '\n'
+                        '|          | Depth  | Time  | Start pressure | End pressure | Gas Volume (l) |\n'
+                        '|:---------|:------:|:-----:|:--------------:|:------------:|:--------------:|\n'
+                        '| Dive 1   | {}     | {}    | -              | {}           | {}             |\n'
+                        '| Interval | -      | {}    | {}             | {}           | -              |\n'
+                        '| Dive 2   | {}     | {}    | {}             | {}           | {}             |\n\n'
+                        '').format(self.dive_dict[1]['d'], self.dive_dict[1]['t'], self.d1_end_pressure,
+                                   self.dive_1_total_v,
+                                   self.surface_interval, self.d1_end_pressure, self.d2_start_pressure,
+                                   self.dive_dict[2]['d'], self.dive_dict[2]['t'], self.d2_start_pressure,
+                                   self.d2_end_pressure,
+                                   self.dive_2_total_v)
+
+        md_gas_data = ('# Gas parameters\n'
+                       '\n'
+                       '')
+
+        print md_dive_data
 
 
 def create_profile(t1, d1, t2, d2, si):
