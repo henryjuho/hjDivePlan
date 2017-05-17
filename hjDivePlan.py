@@ -279,7 +279,6 @@ class Window(QtGui.QMainWindow):
         except AttributeError:
             QtGui.QMessageBox.warning(self, 'No plan', 'You must make a plan to save!', QtGui.QMessageBox.Ok)
 
-
     def print_plan(self):
         pass
 
