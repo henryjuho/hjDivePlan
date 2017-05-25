@@ -11,6 +11,7 @@ import daltons_utils as dl
 import pypandoc
 import os
 
+
 class InfoPopup(QtGui.QDialog):
     def __init__(self, parent=None):
         super(InfoPopup, self).__init__(parent)
@@ -141,10 +142,6 @@ class Window(QtGui.QMainWindow):
         QtGui.QAction.connect(save, QtCore.SIGNAL('triggered()'), self.save_plan)
         tables.setShortcut('Ctrl+S')
         toolbar.addAction(save)
-        print_button = QtGui.QAction(QtGui.QIcon('images/print.png'), 'print', self)
-        QtGui.QAction.connect(save, QtCore.SIGNAL('triggered()'), self.print_plan)
-        tables.setShortcut('Ctrl+P')
-        toolbar.addAction(print_button)
         info = QtGui.QAction(QtGui.QIcon('images/info2.png'), 'info', self)
         QtGui.QAction.connect(info, QtCore.SIGNAL('triggered()'), self.display_info)
         info.setShortcut('Ctrl+I')
