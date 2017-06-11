@@ -1,0 +1,23 @@
+name: dive_env
+dependencies:
+- certifi=2017.4.17=py27_0
+- freetype=2.5.5=2
+- libpng=1.6.27=0
+- mkl=2017.0.1=0
+- numpy=1.13.0=py27_0
+- openssl=1.0.2l=0
+- pandoc=1.19.2.1=0
+- pip=9.0.1=py27_1
+- pypandoc=1.4=py27_0
+- pyqt=4.11.4=py27_4
+- pyqtgraph=0.10.0=py27_0
+- python=2.7.13=1
+- qt=4.8.7=4
+- readline=6.2=2
+- setuptools=27.2.0=py27_0
+- sip=4.18=py27_0
+- sqlite=3.13.0=0
+- tk=8.5.18=0
+- wheel=0.29.0=py27_0
+- zlib=1.2.8=3
+
